@@ -6,7 +6,9 @@ const axios = require('axios');
 const rateLimit = require('express-rate-limit');
 
 const app = express();
-const PORT = 3000;
+
+// RENDER REQUIREMENT: Port must be dynamic
+const PORT = process.env.PORT || 3000;
 
 // আপনার API Key সরাসরি কোডে
 const YOUTUBE_API_KEY = 'AIzaSyCU3BJmLZY_E_1F_whPvcctSbw0GiqVy_U';
@@ -18,10 +20,8 @@ console.log('🔑 API Key:', YOUTUBE_API_KEY.substring(0, 15) + '...');
 console.log('===================================');
 
 // Middleware
-app.use(cors({
-    origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000', 'https://bugfly.netlify.app'],
-    credentials: true
-}));
+// CORS update: Production e jate shob jayga theke request ashte pare
+app.use(cors()); 
 app.use(express.json());
 
 // Rate limiting
@@ -70,7 +70,6 @@ app.get('/api/search', async (req, res) => {
         
         console.log('🔍 Searching YouTube for:', q);
         
-        // Check cache
         const cacheKey = `${q}-${maxResults}-${pageToken || ''}`;
         const cached = searchCache.get(cacheKey);
         if (cached && cached.timestamp > Date.now() - CACHE_TTL) {
@@ -78,7 +77,6 @@ app.get('/api/search', async (req, res) => {
             return res.json(cached.data);
         }
         
-        // Search videos from YouTube
         const searchResponse = await axios.get(`${YOUTUBE_API_BASE}/search`, {
             params: {
                 part: 'snippet',
@@ -91,13 +89,11 @@ app.get('/api/search', async (req, res) => {
         });
         
         if (!searchResponse.data.items || searchResponse.data.items.length === 0) {
-            console.log('⚠️ No results found');
             return res.json({ items: [] });
         }
         
         const videoIds = searchResponse.data.items.map(item => item.id.videoId).join(',');
         
-        // Get video details
         const detailsResponse = await axios.get(`${YOUTUBE_API_BASE}/videos`, {
             params: {
                 part: 'contentDetails,statistics',
@@ -106,7 +102,6 @@ app.get('/api/search', async (req, res) => {
             }
         });
         
-        // Combine data
         const items = searchResponse.data.items.map(item => {
             const details = detailsResponse.data.items.find(d => d.id === item.id.videoId);
             return {
@@ -123,29 +118,16 @@ app.get('/api/search', async (req, res) => {
             pageInfo: searchResponse.data.pageInfo
         };
         
-        // Cache the result
         searchCache.set(cacheKey, {
             timestamp: Date.now(),
             data: responseData
         });
         
-        console.log('✅ Found', items.length, 'videos');
         res.json(responseData);
         
     } catch (error) {
         console.error('❌ Search error:', error.response?.data || error.message);
-        
-        if (error.response?.status === 403) {
-            return res.status(403).json({ 
-                error: 'YouTube API key invalid or expired',
-                details: 'Please check your API key in Google Cloud Console'
-            });
-        }
-        
-        res.status(500).json({ 
-            error: 'Failed to search videos',
-            details: error.response?.data?.error?.message || error.message
-        });
+        res.status(500).json({ error: 'Failed to search videos' });
     }
 });
 
@@ -153,37 +135,19 @@ app.get('/api/search', async (req, res) => {
 app.get('/api/info', async (req, res) => {
     try {
         const { id } = req.query;
-        
-        if (!id) {
-            return res.status(400).json({ error: 'Video ID is required' });
+        if (!id || !ytdl.validateID(id)) {
+            return res.status(400).json({ error: 'Valid Video ID is required' });
         }
-        
-        if (!ytdl.validateID(id)) {
-            return res.status(400).json({ error: 'Invalid video ID' });
-        }
-        
-        console.log('📹 Getting info for video:', id);
         
         const info = await ytdl.getInfo(id);
-        
         const formats = info.formats.map(format => ({
             itag: format.itag,
             quality: format.qualityLabel || format.quality,
             container: format.container,
-            size: format.contentLength ? 
-                `${(parseInt(format.contentLength) / (1024 * 1024)).toFixed(2)} MB` : 
-                'unknown',
+            size: format.contentLength ? `${(parseInt(format.contentLength) / (1024 * 1024)).toFixed(2)} MB` : 'unknown',
             hasAudio: format.hasAudio,
             hasVideo: format.hasVideo
         }));
-        
-        const uniqueFormats = Array.from(
-            new Map(formats.map(f => [f.itag, f])).values()
-        ).sort((a, b) => {
-            const aQuality = parseInt(a.quality) || 0;
-            const bQuality = parseInt(b.quality) || 0;
-            return bQuality - aQuality;
-        });
         
         res.json({
             title: info.videoDetails.title,
@@ -191,15 +155,10 @@ app.get('/api/info', async (req, res) => {
             duration: parseInt(info.videoDetails.lengthSeconds),
             thumbnails: info.videoDetails.thumbnails,
             viewCount: info.videoDetails.viewCount,
-            formats: uniqueFormats
+            formats: Array.from(new Map(formats.map(f => [f.itag, f])).values())
         });
-        
     } catch (error) {
-        console.error('❌ Info error:', error);
-        res.status(500).json({ 
-            error: 'Failed to fetch video info',
-            details: error.message
-        });
+        res.status(500).json({ error: 'Failed to fetch video info' });
     }
 });
 
@@ -207,128 +166,35 @@ app.get('/api/info', async (req, res) => {
 app.get('/api/download', async (req, res) => {
     try {
         const { id, itag } = req.query;
-        
-        if (!id || !itag) {
-            return res.status(400).json({ error: 'Video ID and itag are required' });
-        }
-        
-        if (!ytdl.validateID(id)) {
-            return res.status(400).json({ error: 'Invalid video ID' });
-        }
-        
-        console.log('⬇️ Downloading video:', id);
+        if (!id || !itag) return res.status(400).json({ error: 'ID and itag required' });
         
         const info = await ytdl.getInfo(id);
         const format = info.formats.find(f => f.itag == itag);
         
-        if (!format) {
-            return res.status(404).json({ error: 'Format not found' });
-        }
+        const sanitizedTitle = info.videoDetails.title.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+        res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.${format.container}"`);
         
-        const sanitizedTitle = info.videoDetails.title
-            .replace(/[^\w\s]/gi, '')
-            .replace(/\s+/g, '_')
-            .substring(0, 100);
-        
-        const filename = `${sanitizedTitle}.${format.container}`;
-        
-        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-Type', format.mimeType || 'video/mp4');
-        
-        const stream = ytdl(id, { format });
-        stream.pipe(res);
-        
+        ytdl(id, { format }).pipe(res);
     } catch (error) {
-        console.error('❌ Download error:', error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: 'Download failed' });
-        }
-    }
-});
-
-// Stream endpoint for custom player
-app.get('/api/stream/:videoId', async (req, res) => {
-    try {
-        const videoId = req.params.videoId;
-        const { itag } = req.query;
-        
-        if (!ytdl.validateID(videoId)) {
-            return res.status(400).json({ error: 'Invalid video ID' });
-        }
-        
-        console.log('🎬 Streaming video:', videoId);
-        
-        const info = await ytdl.getInfo(videoId);
-        
-        let format;
-        if (itag) {
-            format = info.formats.find(f => f.itag == itag);
-        } else {
-            format = ytdl.chooseFormat(info.formats, { 
-                quality: '18',
-                filter: 'audioandvideo' 
-            });
-        }
-        
-        if (!format) {
-            return res.status(404).json({ error: 'No playable format found' });
-        }
-        
-        res.setHeader('Content-Type', format.mimeType || 'video/mp4');
-        res.setHeader('Accept-Ranges', 'bytes');
-        res.setHeader('Cache-Control', 'no-cache');
-        
-        const range = req.headers.range;
-        if (range) {
-            const parts = range.replace(/bytes=/, '').split('-');
-            const start = parseInt(parts[0], 10);
-            const end = parts[1] ? parseInt(parts[1], 10) : undefined;
-            
-            res.status(206);
-            res.setHeader('Content-Range', `bytes ${start}-${end || ''}/*`);
-        }
-        
-        const stream = ytdl(videoId, { format });
-        
-        stream.on('error', (error) => {
-            console.error('Stream error:', error);
-            if (!res.headersSent) {
-                res.status(500).json({ error: 'Stream failed' });
-            }
-        });
-        
-        stream.pipe(res);
-        
-    } catch (error) {
-        console.error('Stream error:', error);
-        res.status(500).json({ error: 'Failed to stream video' });
+        res.status(500).json({ error: 'Download failed' });
     }
 });
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        apiKeyConfigured: true
-    });
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log('\n✅ YT2 Server is running!');
-    console.log('📡 API: http://localhost:' + PORT + '/api');
-    console.log('💚 Health: http://localhost:' + PORT + '/api/health');
-    console.log('🔑 API Key: ✅ Configured (Real YouTube Data)');
-    console.log('\n💡 Test search: http://localhost:3000/api/search?q=bulleya\n');
+// Start server: IMPORTANT - IP '0.0.0.0' and PORT variable
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n✅ YT2 Server is running on port ${PORT}`);
+    console.log(`📡 API Link: https://flybee.onrender.com/api`);
 });
 
-// Cleanup cache periodically
+// Cleanup cache
 setInterval(() => {
     const now = Date.now();
     for (const [key, value] of searchCache.entries()) {
-        if (value.timestamp < now - CACHE_TTL) {
-            searchCache.delete(key);
-        }
+        if (value.timestamp < now - CACHE_TTL) searchCache.delete(key);
     }
 }, CACHE_TTL);
