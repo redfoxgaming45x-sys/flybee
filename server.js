@@ -164,25 +164,37 @@ app.get('/api/info', async (req, res) => {
         
         console.log('📹 Getting info for video:', id);
         
+        // Use more options for ytdl to avoid some errors
         const info = await ytdl.getInfo(id);
         
-        const formats = info.formats.map(format => ({
-            itag: format.itag,
-            quality: format.qualityLabel || format.quality,
-            container: format.container,
-            size: format.contentLength ? 
-                `${(parseInt(format.contentLength) / (1024 * 1024)).toFixed(2)} MB` : 
-                'unknown',
-            hasAudio: format.hasAudio,
-            hasVideo: format.hasVideo
-        }));
+        const formats = info.formats.map(format => {
+            let qualityLabel = format.qualityLabel || format.quality;
+            
+            // Check if it's high resolution
+            const isHighRes = qualityLabel && (qualityLabel.includes('1080') || qualityLabel.includes('1440') || qualityLabel.includes('2160') || qualityLabel.includes('4320'));
+            const hasAudio = !!format.hasAudio;
+            const hasVideo = !!format.hasVideo;
+
+            return {
+                itag: format.itag,
+                quality: qualityLabel,
+                container: format.container,
+                size: format.contentLength ? 
+                    `${(parseInt(format.contentLength) / (1024 * 1024)).toFixed(2)} MB` : 
+                    'unknown',
+                hasAudio,
+                hasVideo,
+                isHighRes,
+                label: `${qualityLabel}${!hasAudio ? ' (No Audio)' : ''}${!hasVideo ? ' (Audio Only)' : ''}`
+            };
+        });
         
-        const uniqueFormats = Array.from(
-            new Map(formats.map(f => [f.itag, f])).values()
-        ).sort((a, b) => {
-            const aQuality = parseInt(a.quality) || 0;
-            const bQuality = parseInt(b.quality) || 0;
-            return bQuality - aQuality;
+        // Sort and filter formats
+        const uniqueFormats = formats.sort((a, b) => {
+            const aQ = parseInt(a.quality) || 0;
+            const bQ = parseInt(b.quality) || 0;
+            if (bQ !== aQ) return bQ - aQ;
+            return (b.hasAudio && b.hasVideo) ? 1 : -1;
         });
         
         res.json({
@@ -191,6 +203,10 @@ app.get('/api/info', async (req, res) => {
             duration: parseInt(info.videoDetails.lengthSeconds),
             thumbnails: info.videoDetails.thumbnails,
             viewCount: info.videoDetails.viewCount,
+            likes: info.videoDetails.likes,
+            description: info.videoDetails.description,
+            publishDate: info.videoDetails.publishDate,
+            subscriberCount: info.videoDetails.author.subscriber_count,
             formats: uniqueFormats
         });
         
@@ -216,7 +232,7 @@ app.get('/api/download', async (req, res) => {
             return res.status(400).json({ error: 'Invalid video ID' });
         }
         
-        console.log('⬇️ Downloading video:', id);
+        console.log('⬇️ Downloading video:', id, 'itag:', itag);
         
         const info = await ytdl.getInfo(id);
         const format = info.formats.find(f => f.itag == itag);
@@ -230,18 +246,36 @@ app.get('/api/download', async (req, res) => {
             .replace(/\s+/g, '_')
             .substring(0, 100);
         
-        const filename = `${sanitizedTitle}.${format.container}`;
+        const filename = `${sanitizedTitle}.${format.container || 'mp4'}`;
         
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-Type', format.mimeType || 'video/mp4');
+        if (format.contentLength) {
+            res.setHeader('Content-Length', format.contentLength);
+        }
         
-        const stream = ytdl(id, { format });
+        const stream = ytdl(id, { 
+            format,
+            requestOptions: {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            }
+        });
+
+        stream.on('error', (err) => {
+            console.error('Stream error:', err);
+            if (!res.headersSent) {
+                res.status(500).send('Download failed');
+            }
+        });
+
         stream.pipe(res);
         
     } catch (error) {
         console.error('❌ Download error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Download failed' });
+            res.status(500).json({ error: 'Download failed', details: error.message });
         }
     }
 });
