@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>YT2 — The Obsidian Stage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+    <!-- Top Navigation Bar -->
+    <header class="topnav" id="topNav">
+        <div class="topnav-left">
+            <span class="brand-logo">YT2</span>
+        </div>
+
+        <div class="topnav-center">
+            <div class="search-wrap" id="searchWrap">
+                <span class="material-symbols-outlined search-ico">search</span>
+                <input
+                    id="searchInput"
+                    class="search-input"
+                    placeholder="Search Obsidian Stage..."
+                    type="text"
+                    autocomplete="off"
+                    spellcheck="false"
+                />
+                <button class="search-clear" id="searchClear" aria-label="Clear search">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <button class="search-btn" id="searchBtn" aria-label="Search">
+                    <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="topnav-right">
+            <button class="nav-icon-btn" id="notifBtn" aria-label="Notifications">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="notif-dot"></span>
+            </button>
+            <div class="avatar-wrap">
+                <img alt="Profile" class="avatar-img"
+                     src="https://ui-avatars.com/api/?name=YT2+User&background=ff2d2d&color=fff&bold=true"
+                     onerror="this.src='https://ui-avatars.com/api/?name=U&background=2a2a2a&color=fff'"/>
+            </div>
+        </div>
+    </header>
+
+    <!-- Shell -->
+    <div class="shell">
+
+        <!-- Side Navigation -->
+        <aside class="sidenav" id="sideNav">
+            <div class="sidenav-brand">
+                <span class="sidenav-title">YT2 Premium</span>
+                <span class="sidenav-sub">The Obsidian Stage</span>
+            </div>
+
+            <nav class="sidenav-menu">
+                <a class="nav-item active" href="#" data-page="home" id="navHome">
+                    <span class="material-symbols-outlined nav-icon" style="font-variation-settings:'FILL' 1">home</span>
+                    <span class="nav-label">Home</span>
+                </a>
+                <a class="nav-item" href="#" data-page="explore" id="navExplore">
+                    <span class="material-symbols-outlined nav-icon">explore</span>
+                    <span class="nav-label">Explore</span>
+                </a>
+                <a class="nav-item" href="#" data-page="library" id="navLibrary">
+                    <span class="material-symbols-outlined nav-icon">video_library</span>
+                    <span class="nav-label">Library</span>
+                </a>
+                <a class="nav-item" href="#" data-page="subscriptions" id="navSubs">
+                    <span class="material-symbols-outlined nav-icon">subscriptions</span>
+                    <span class="nav-label">Subscriptions</span>
+                </a>
+                <a class="nav-item" href="#" data-page="history" id="navHistory">
+                    <span class="material-symbols-outlined nav-icon">history</span>
+                    <span class="nav-label">History</span>
+                </a>
+                <a class="nav-item" href="#" data-page="liked" id="navLiked">
+                    <span class="material-symbols-outlined nav-icon">favorite</span>
+                    <span class="nav-label">Liked Videos</span>
+                </a>
+            </nav>
+
+            <div class="sidenav-footer">
+                <div class="upgrade-card">
+                    <span class="material-symbols-outlined upgrade-icon">workspace_premium</span>
+                    <div>
+                        <p class="upgrade-title">Go Premium</p>
+                        <p class="upgrade-sub">Ad-free experience</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main" id="mainArea">
+
+            <!-- ===== HOME PAGE ===== -->
+            <div id="homePage">
+
+                <!-- Hero Spotlight -->
+                <section class="hero" id="heroSection">
+                    <div class="hero-media">
+                        <img class="hero-img" id="heroImg"
+                             src="https://images.unsplash.com/photo-1614850523296-d8c1af93d400?w=1600&q=80"
+                             alt="Featured video thumbnail"/>
+                        <div class="hero-gradient"></div>
+                    </div>
+                    <div class="hero-content">
+                        <span class="hero-badge">
+                            <span class="material-symbols-outlined" style="font-size:12px;vertical-align:middle;">bolt</span>
+                            Featured Now
+                        </span>
+                        <h1 class="hero-title" id="heroTitle">Neon Echoes:<br/>The Final Synthesis</h1>
+                        <p class="hero-desc" id="heroDesc">Experience the breathtaking visual journey through the digital void. A masterclass in cinematic lighting and sound design.</p>
+                        <div class="hero-actions">
+                            <button class="btn-primary" id="heroWatchBtn">
+                                <span class="material-symbols-outlined">play_arrow</span>
+                                Watch Now
+                            </button>
+                            <button class="btn-glass" id="heroDetailsBtn">Details</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Category Chips -->
+                <div class="category-row" id="categoryRow">
+                    <button class="cat-chip active" data-query="Trending">
+                        <span class="material-symbols-outlined">trending_up</span> Trending
+                    </button>
+                    <button class="cat-chip" data-query="Music">
+                        <span class="material-symbols-outlined">music_note</span> Music
+                    </button>
+                    <button class="cat-chip" data-query="Gaming">
+                        <span class="material-symbols-outlined">sports_esports</span> Gaming
+                    </button>
+                    <button class="cat-chip" data-query="Technology">
+                        <span class="material-symbols-outlined">computer</span> Tech
+                    </button>
+                    <button class="cat-chip" data-query="Movies">
+                        <span class="material-symbols-outlined">movie</span> Movies
+                    </button>
+                    <button class="cat-chip" data-query="Sports">
+                        <span class="material-symbols-outlined">sports_soccer</span> Sports
+                    </button>
+                    <button class="cat-chip" data-query="News">
+                        <span class="material-symbols-outlined">newspaper</span> News
+                    </button>
+                    <button class="cat-chip" data-query="Education">
+                        <span class="material-symbols-outlined">school</span> Learning
+                    </button>
+                </div>
+
+                <!-- Recommended Section -->
+                <section class="feed-section" id="recommendSection">
+                    <div class="section-header">
+                        <h2 class="section-title">Recommended</h2>
+                        <span class="section-meta" id="sectionMeta"></span>
+                    </div>
+                    <div class="video-grid" id="recommendGrid"></div>
+                </section>
+
+            </div>
+
+            <!-- ===== SEARCH RESULTS PAGE ===== -->
+            <div id="searchPage" class="hidden">
+                <div class="search-header">
+                    <h2 class="search-title">Results for <span id="searchQueryLabel" class="search-query-text"></span></h2>
+                    <div class="search-filters">
+                        <button class="filter-pill active" data-filter="all">All</button>
+                        <button class="filter-pill" data-filter="video">Videos</button>
+                        <button class="filter-pill" data-filter="channel">Channels</button>
+                    </div>
+                </div>
+                <div class="video-grid" id="searchGrid"></div>
+                <div id="noResults" class="no-results hidden">
+                    <span class="material-symbols-outlined no-results-icon">search_off</span>
+                    <h3>No results found</h3>
+                    <p>Try different keywords or check your spelling</p>
+                </div>
+            </div>
+
+            <!-- ===== LOADING SKELETON ===== -->
+            <div id="loadingState" class="hidden">
+                <div class="skeleton-section-header">
+                    <div class="skeleton-line w200"></div>
+                </div>
+                <div class="video-grid skeleton-grid-wrap">
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w80"></div><div class="skeleton-line w50"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w90"></div><div class="skeleton-line w60"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w70"></div><div class="skeleton-line w45"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w85"></div><div class="skeleton-line w55"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w75"></div><div class="skeleton-line w40"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w65"></div><div class="skeleton-line w50"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w88"></div><div class="skeleton-line w48"></div></div></div></div>
+                    <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-meta"><div class="skeleton-avatar"></div><div class="skeleton-lines"><div class="skeleton-line w72"></div><div class="skeleton-line w55"></div></div></div></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-nav">
+        <button class="mobile-nav-item active" data-page="home">
+            <span class="material-symbols-outlined">home</span>
+            <span>Home</span>
+        </button>
+        <button class="mobile-nav-item" data-page="explore">
+            <span class="material-symbols-outlined">explore</span>
+            <span>Explore</span>
+        </button>
+        <button class="mobile-nav-item" id="mobileSearchTrigger">
+            <span class="material-symbols-outlined">search</span>
+            <span>Search</span>
+        </button>
+        <button class="mobile-nav-item" data-page="library">
+            <span class="material-symbols-outlined">video_library</span>
+            <span>Library</span>
+        </button>
+        <button class="mobile-nav-item" data-page="profile">
+            <span class="material-symbols-outlined">person</span>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+    <!-- ===== VIDEO PLAYER MODAL ===== -->
+    <div id="videoModal" class="modal" role="dialog" aria-modal="true" aria-label="Video player">
+        <div class="modal-backdrop" id="modalBackdrop"></div>
+        <div class="modal-sheet" id="modalSheet">
+            <div class="modal-handle"></div>
+
+            <div class="modal-scroll-area">
+                <!-- Player -->
+                <div class="player-wrap" id="playerWrap">
+                    <div id="playerContainer" class="player-container">
+                        <div class="player-placeholder">
+                            <div class="player-spinner">
+                                <span class="material-symbols-outlined spin-icon">autorenew</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Video Info -->
+                <div class="modal-info">
+                    <h2 class="modal-video-title" id="videoTitle">Loading...</h2>
+
+                    <div class="modal-channel-row">
+                        <div class="channel-avatar-sm">
+                            <span class="material-symbols-outlined" style="font-size:20px;color:var(--text-muted)">account_circle</span>
+                        </div>
+                        <div>
+                            <p class="modal-channel-name" id="videoChannel">Channel</p>
+                            <p class="modal-sub-count" id="videoSubCount"></p>
+                        </div>
+                        <button class="btn-subscribe" id="subscribeBtn">Subscribe</button>
+                    </div>
+
+                    <div class="modal-stats-row" id="videoStats"></div>
+
+                    <!-- Action Row -->
+                    <div class="modal-actions">
+                        <button class="action-btn" id="likeBtn">
+                            <span class="material-symbols-outlined">thumb_up</span>
+                            <span class="action-label" id="likeCount">Like</span>
+                        </button>
+                        <button class="action-btn" id="dislikeBtn">
+                            <span class="material-symbols-outlined">thumb_down</span>
+                            <span class="action-label">Dislike</span>
+                        </button>
+                        <button class="action-btn" id="shareBtn">
+                            <span class="material-symbols-outlined">share</span>
+                            <span class="action-label">Share</span>
+                        </button>
+                        <button class="action-btn" id="downloadBtn">
+                            <span class="material-symbols-outlined">download</span>
+                            <span class="action-label">Download</span>
+                        </button>
+                        <button class="action-btn" id="saveBtn">
+                            <span class="material-symbols-outlined">bookmark_add</span>
+                            <span class="action-label">Save</span>
+                        </button>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="modal-desc-wrap" id="descWrap">
+                        <p class="modal-desc" id="videoDesc"></p>
+                        <button class="desc-toggle" id="descToggle">Show more</button>
+                    </div>
+
+                    <!-- Download Panel -->
+                    <div id="downloadPanel" class="download-panel hidden">
+                        <div class="download-panel-head">
+                            <h3><span class="material-symbols-outlined">cloud_download</span> Download Options</h3>
+                            <button id="closeDownloadPanel" class="panel-close">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                        <div id="formatList" class="format-list"></div>
+                        <p class="download-disclaimer">
+                            <span class="material-symbols-outlined" style="font-size:14px">shield</span>
+                            For personal use only. Respect creators' rights.
+                        </p>
+                    </div>
+
+                    <!-- Related Videos -->
+                    <div class="related-section" id="relatedSection">
+                        <h3 class="related-title">Up Next</h3>
+                        <div id="relatedGrid" class="related-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Close -->
+            <button class="modal-close-btn" id="modalCloseBtn" aria-label="Close">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
